@@ -5,6 +5,8 @@ import cors from "cors";
 import productRoutes from "./routes/productRoutes.js";
 import supplierRoutes from "./routes/supplierRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -22,6 +24,8 @@ app.use("/auth", authRoutes);
 // Serve Routes
 app.use("/products", productRoutes);
 app.use("/suppliers", supplierRoutes);
+app.use("/payments", paymentRoutes);
+app.use("/reviews", reviewRoutes);
 
 app.get("/", (req, res) => {
     res.send("The Meat Shop Server is online 🚀");

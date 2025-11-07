@@ -16,3 +16,9 @@ export const getAll = async (req, res) => {
         return error(res, err.message);
     }
 };
+
+export const getById = async (id) => {
+    const [rows] = await pool.execute(`SELECT * FROM suppliers WHERE id = ?`, [id]);
+    return rows[0] || null;
+};
+
