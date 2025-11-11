@@ -64,15 +64,6 @@ export const login = async (req, res) => {
 // Generate 6-digit OTP
 const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Email transporter
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
-
 // Step 1: Send reset code
 export const sendResetCode = async (req, res) => {
     const role = req.params.role;
@@ -165,7 +156,7 @@ export const resetPassword = async (req, res) => {
         if (!validUser)
             return res.status(400).json({ message: "Invalid or expired code" });
 
-        await AuthModel.updatePassword(email, newPassword);
+        await AuthModel.updatePassword(email, newPassword, role);
         res.json({ message: "Password updated successfully" });
     } catch (err) {
         res.status(500).json({ message: err.message });

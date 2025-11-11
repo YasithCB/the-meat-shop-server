@@ -165,14 +165,23 @@ export const AuthModel = {
 
 
     // Update password after verifying code
-    async updatePassword(email, newPassword) {
+    async updatePassword(email, newPassword, role) {
+        const tables = {
+            customer: "users",
+            supplier: "suppliers",
+            rider: "riders",
+        };
+
+        const table = tables[role];
+        if (!table) throw new Error("Invalid role");
+
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await pool.execute(
-            `UPDATE users 
-       SET password = ?, reset_code = NULL, reset_expires = NULL 
-       WHERE email = ?`,
-            [hashedPassword, email]
-        );
+            `UPDATE ${table} 
+               SET password = ?, reset_code = NULL, reset_expires = NULL 
+               WHERE email = ?`,
+                    [hashedPassword, email]
+                );
     },
 
 };
