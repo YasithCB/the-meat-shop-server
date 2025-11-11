@@ -121,6 +121,58 @@ export const AuthModel = {
 
         const [result] = await pool.execute(query, params);
         return result;
-    }
+    },
+
+    // PW RESET -----------------------------------------------
+
+    // Save reset code and expiry time
+    async saveResetCode(email, code, role) {
+        const tables = {
+            customer: "users",
+            supplier: "suppliers",
+            rider: "riders",
+        };
+
+        const table = tables[role];
+        if (!table) throw new Error("Invalid role");
+
+        await pool.execute(
+            `UPDATE ${table} 
+             SET reset_code = ?, reset_expires = DATE_ADD(NOW(), INTERVAL 15 MINUTE) 
+             WHERE email = ?`,
+            [code, email]
+        );
+    },
+
+    // Verify if reset code is valid
+    async verifyResetCode(email, code, role) {
+        const tables = {
+            customer: "users",
+            supplier: "suppliers",
+            rider: "riders",
+        };
+
+        const table = tables[role];
+        if (!table) throw new Error("Invalid role");
+
+        const [rows] = await pool.execute(
+            `SELECT * FROM ${table} WHERE email = ? AND reset_code = ? AND reset_expires > NOW()`,
+            [email, code]
+        );
+
+        return rows[0] || null;
+    },
+
+
+    // Update password after verifying code
+    async updatePassword(email, newPassword) {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await pool.execute(
+            `UPDATE users 
+       SET password = ?, reset_code = NULL, reset_expires = NULL 
+       WHERE email = ?`,
+            [hashedPassword, email]
+        );
+    },
 
 };
