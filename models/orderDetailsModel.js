@@ -7,23 +7,48 @@ import { pool } from "../db.js";
  * @param {Array} items - [{ product_id, category_title, quantity, price }]
  */
 export const saveMultipleOrderDetails = async (payment_id, user_id, items) => {
-    const values = items.map((item) => [
-        payment_id,
-        user_id,
-        item.id,
-        item.category_title,
-        item.quantity || 1,
-        JSON.stringify(item) // <-- store the entire list as JSON string
-    ]);
+    const values = [];
 
+    for (const item of items) {
+
+        // Fetch supplier_id from products table
+        const [rows] = await pool.query(
+            `SELECT *, supplier_id FROM products WHERE id = ? LIMIT 1`,
+            [item.id]
+        );
+
+        if (!rows || rows.length === 0) {
+            throw new Error(`Item not found with ID: ${item.id}`);
+        }
+
+        const supplier_id = rows[0].supplier_id;
+
+        // Prepare values array
+        values.push([
+            payment_id,
+            user_id,
+            item.id,
+            supplier_id,
+            item.category_title,
+            item.quantity || 1,
+            JSON.stringify({
+                ...item,
+                supplier_id, // Add supplier_id into JSON
+            }),
+        ]);
+    }
+
+    // Insert into order_details
     const [result] = await pool.query(
-        `INSERT INTO order_details (payment_id, user_id, product_id, category_title, quantity, product)
+        `INSERT INTO order_details
+         (payment_id, user_id, product_id, supplier_id, category_title, quantity, product)
          VALUES ?`,
         [values]
     );
 
     return result.affectedRows;
 };
+
 
 
 /**

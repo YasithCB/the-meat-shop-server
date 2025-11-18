@@ -23,7 +23,7 @@ export const createPayment = async (req, res) => {
             return error(res, "Missing card source token");
         }
 
-        let orderId = `ORD_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        let orderId = `ord_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
         let data = {
             amount: amount,
@@ -43,10 +43,10 @@ export const createPayment = async (req, res) => {
                 email: customer_email,
                 phone: customer_phone,
             },
-            merchant: { id: "67993052" },
+            merchant: { id: "67993050" },
             source: { id: token },
-            post: { url: "http://localhost:5173/order-details" },
-            redirect: { url: "http://localhost:5173/order-details" },
+            post: { url: "http://localhost:5173/shop/payment-success" },
+            redirect: { url: "http://localhost:5173/shop/payment-success" },
         };
 
         const config = {
